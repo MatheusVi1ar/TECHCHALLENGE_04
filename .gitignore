@@ -6,3 +6,5 @@
 /lstm_model_DIS.pth
 /__pycache__
 lstm_model_AAPL.pth
+model/__pycache__
+util/__pycache__
