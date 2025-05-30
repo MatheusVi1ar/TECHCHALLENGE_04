@@ -5,7 +5,7 @@ from util import util
 from model import lstm
 import numpy as np
 
-def separate_train_test_data(x, y, dates, train_size=0.8):
+def __separate_train_test_data__(x, y, dates, train_size=0.8):
     """Divide os dados em conjuntos de treino e teste com base na proporção fornecida"""
     train_len = int(len(x) * train_size)
     
@@ -19,7 +19,7 @@ def separate_train_test_data(x, y, dates, train_size=0.8):
     return x_train, y_train, x_test, y_test, dates_train, dates_test
 
 
-def __predict_sequences(model, sequences, scaler):
+def __predict_sequences__(model, sequences, scaler):
     """Faz previsões para um conjunto de sequências"""
     model.eval()
     predictions = []
@@ -52,7 +52,7 @@ def train_model(ticker: str, start_date: str, end_date: str, train_size: float, 
     print(f"📊 Sequências criadas: {len(x)} sequências de {sequence_length} dias")
 
     # 4. DIVISÃO TEMPORAL DOS DADOS
-    x_train, y_train, x_test, y_test, dates_train, dates_test = lstm.separate_train_test_data(x, y, sequence_dates, train_size=0.8)
+    x_train, y_train, x_test, y_test, dates_train, dates_test = __separate_train_test_data__(x, y, sequence_dates, train_size=0.8)
     print("📋 Divisão dos dados:")
     print(f"  Treino: {len(x_train)} sequências ({dates_train[0].strftime('%Y-%m-%d')} a {dates_train[-1].strftime('%Y-%m-%d')})")
     print(f"  Teste: {len(x_test)} sequências ({dates_test[0].strftime('%Y-%m-%d')} a {dates_test[-1].strftime('%Y-%m-%d')})")
@@ -84,7 +84,7 @@ def train_model(ticker: str, start_date: str, end_date: str, train_size: float, 
     
     # Previsões para cada conjunto
     #y_train_pred = lstm.predict_sequences(model, x_train, scaler)
-    y_test_pred = lstm.predict_sequences(model, x_test, scaler)
+    y_test_pred = __predict_sequences__(model, x_test, scaler)
     
     # Desnormalizar os dados
     #y_train_actual = scaler.inverse_transform(y_train.reshape(-1, 1)).flatten()
