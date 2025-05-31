@@ -14,6 +14,7 @@ class TrainRequest(BaseModel):
     end_date: str = Field(..., description="Data de término para os dados no formato YYYY-MM-DD")
     train_size: float = Field(0.8, description="Proporção dos dados usados para treinamento (0 a 1)")
     sequence_length: int = Field(30, description="Número de dias em cada sequência para o modelo LSTM")
+    num_epochs: int = Field(300, description="Número de épocas para treinamento do modelo LSTM")
     
 class PredictionRequest(BaseModel):
     model_id: int = Field(..., description="ID do modelo a ser usado para previsão")

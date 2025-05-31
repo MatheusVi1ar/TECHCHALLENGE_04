@@ -36,7 +36,8 @@ async def train_model(train_request: TrainRequest):
             start_date=train_request.start_date,
             end_date=train_request.end_date,
             train_size=train_request.train_size,
-            sequence_length=train_request.sequence_length
+            sequence_length=train_request.sequence_length,
+            num_epochs=train_request.num_epochs
         )
 
         return {"model_id": training_metrics["ID"],
