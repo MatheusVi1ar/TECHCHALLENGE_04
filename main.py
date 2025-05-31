@@ -1,46 +1,71 @@
+import json
+from fastapi.responses import RedirectResponse
 import torch
 import pytorch_lightning as L
 from torch.utils.data import TensorDataset, DataLoader
 from repository import lstmRepository
-from util import util
+from util import metrics, plot, util, validate
 from model import lstm
-from APImodel import Model, TrainRequest, PredictionRequest
-from fastapi import FastAPI
+from model.APImodel import Model, TrainRequest, PredictionRequest
+from fastapi import FastAPI, HTTPException
 
-app = FastAPI()
+app = FastAPI(title="Tech Challenge 04")
 
+@app.get("/", include_in_schema=False)
+async def docs_redirect():
+    """
+    Redireciona para a documentação Swagger.
+    """
+    return RedirectResponse(url="/docs")
 
 @app.get("/models")
 async def get_models() -> list[Model]:
-    models = util.consular_modelos()
-    return models.json()
+    models: list[Model] = util.consultar_modelos()
+    return models
 
 @app.post("/models/train")
 async def train_model(train_request: TrainRequest):
-    training_metrics = lstmRepository.train_model(
-        ticker=train_request.ticker,
-        start_date=train_request.start_date,
-        end_date=train_request.end_date,
-        train_size=train_request.train_size,
-        sequence_length=train_request.sequence_length
-    )
-    
-    return {"model_id": training_metrics["ID"],
-            "ticker": train_request.ticker,
-            "mae"  : training_metrics['MAE'],
-            "rmse" : training_metrics['RMSE'],
-            "mape" : training_metrics['MAPE'],
-            "r2"   : training_metrics['R²']}
+    try:
+        validate.validate_train_request(train_request)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    try:
+        training_metrics = lstmRepository.train_model(
+            ticker=train_request.ticker,
+            start_date=train_request.start_date,
+            end_date=train_request.end_date,
+            train_size=train_request.train_size,
+            sequence_length=train_request.sequence_length
+        )
+
+        return {"model_id": training_metrics["ID"],
+                "ticker": train_request.ticker,
+                "mae"  : training_metrics['MAE'],
+                "rmse" : training_metrics['RMSE'],
+                "mape" : training_metrics['MAPE'],
+                "r2"   : training_metrics['R²']}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @app.post("/models/predict")
 async def predict_model(predict_request: PredictionRequest):
-    predictions = lstmRepository.predict_model(
-        model_id=predict_request.model_id,
-        start_date=predict_request.start_date,
-        end_date=predict_request.end_date,
-        days=predict_request.days
-    )
-    return predictions.json()
+    try:
+        validate.validate_prediction_request(predict_request)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))    
+
+    try:
+        predictions = lstmRepository.predict_model(
+            predict_request.model_id,
+            predict_request.start_date,
+            predict_request.end_date,
+            predict_request.days,
+            predict_request.sequence_length
+        )
+        return json.dumps(predictions)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 def main():
     print("📊 Iniciando análise LSTM com divisão temporal...")
@@ -115,8 +140,8 @@ def main():
     # 9. CALCULAR MÉTRICAS
     print("📊 Calculando métricas...")
     
-    train_metrics = util.calculate_metrics(y_train_actual, y_train_pred_rescaled)
-    test_metrics = util.calculate_metrics(y_test_actual, y_test_pred_rescaled)
+    train_metrics = metrics.calculate_metrics(y_train_actual, y_train_pred_rescaled)
+    test_metrics = metrics.calculate_metrics(y_test_actual, y_test_pred_rescaled)
     
     # 10. MOSTRAR RESULTADOS
     print("\n" + "="*60)
@@ -133,16 +158,16 @@ def main():
     print("📊 Gerando gráficos...")
     
     # Gráfico de métricas
-    util.plot_metrics_comparison(train_metrics, test_metrics)
+    plot.plot_metrics_comparison(train_metrics, test_metrics)
     
     # Gráfico de progresso do treinamento
-    util.plot_training_progress(model)
-    
+    plot.plot_training_progress(model)
+
     # Gráficos de previsões vs valores reais
-    util.plot_predictions_vs_actual(dates_train, y_train_actual, y_train_pred_rescaled, 
+    plot.plot_predictions_vs_actual(dates_train, y_train_actual, y_train_pred_rescaled, 
                               f"Conjunto de Treino - {TICKER}")
-    
-    util.plot_predictions_vs_actual(dates_test, y_test_actual, y_test_pred_rescaled, 
+
+    plot.plot_predictions_vs_actual(dates_test, y_test_actual, y_test_pred_rescaled, 
                               f"Conjunto de Teste - {TICKER}")
     
     print("✅ Análise completa!")

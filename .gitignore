@@ -4,7 +4,10 @@
 /.venv
 /checkpoints
 /lstm_model_DIS.pth
-/__pycache__
+/__pycache__/
 lstm_model_AAPL.pth
-model/__pycache__
-util/__pycache__
+model/__pycache__/
+util/__pycache__/
+repository/__pycache__/
+modelos_treinados/
+/.env

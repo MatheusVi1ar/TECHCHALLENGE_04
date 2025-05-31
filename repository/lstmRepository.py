@@ -1,7 +1,7 @@
 import torch
 import pytorch_lightning as L
 from torch.utils.data import TensorDataset, DataLoader
-from util import util
+from util import metrics, util
 from model import lstm
 import numpy as np
 
@@ -33,7 +33,7 @@ def __predict_sequences__(model, sequences, scaler):
     
     return np.array(predictions)
 
-def train_model(ticker: str, start_date: str, end_date: str, train_size: float, sequence_length: int, num_epochs: int = 300) -> dict:
+def train_model(ticker: str, start_date: str, end_date: str, train_size: float, sequence_length: int, num_epochs: int = 10) -> dict:
     prices = []
     dates = []
     
@@ -41,6 +41,9 @@ def train_model(ticker: str, start_date: str, end_date: str, train_size: float, 
     print(f"📈 Baixando dados para {ticker}...")
     prices, dates = util.carregar_dados(ticker, start_date, end_date)
     print(f"✅ Dados carregados: {len(prices)} dias de {dates[0].strftime('%Y-%m-%d')} a {dates[-1].strftime('%Y-%m-%d')}")
+    
+    if len(prices) == 0:
+        raise ValueError("Nenhum dado de preço encontrado para o ticker especificado.")
 
     # 2. NORMALIZAÇÃO
     print("🔄 Normalizando os preços...")
@@ -52,7 +55,7 @@ def train_model(ticker: str, start_date: str, end_date: str, train_size: float, 
     print(f"📊 Sequências criadas: {len(x)} sequências de {sequence_length} dias")
 
     # 4. DIVISÃO TEMPORAL DOS DADOS
-    x_train, y_train, x_test, y_test, dates_train, dates_test = __separate_train_test_data__(x, y, sequence_dates, train_size=0.8)
+    x_train, y_train, x_test, y_test, dates_train, dates_test = __separate_train_test_data__(x, y, sequence_dates, train_size=train_size)
     print("📋 Divisão dos dados:")
     print(f"  Treino: {len(x_train)} sequências ({dates_train[0].strftime('%Y-%m-%d')} a {dates_train[-1].strftime('%Y-%m-%d')})")
     print(f"  Teste: {len(x_test)} sequências ({dates_test[0].strftime('%Y-%m-%d')} a {dates_test[-1].strftime('%Y-%m-%d')})")
@@ -96,17 +99,17 @@ def train_model(ticker: str, start_date: str, end_date: str, train_size: float, 
     # 9. CALCULAR MÉTRICAS
     print("📊 Calculando métricas...")
     
-    #train_metrics = util.calculate_metrics(y_train_actual, y_train_pred_rescaled)
-    test_metrics = util.calculate_metrics(y_test_actual, y_test_pred_rescaled)
+    #train_metrics = metrics.calculate_metrics(y_train_actual, y_train_pred_rescaled)
+    test_metrics = metrics.calculate_metrics(y_test_actual, y_test_pred_rescaled)
     
     #10. SALVAR MODELO
     print("💾 Salvando modelo...")
-    test_metrics["ID"] = util.gravar_modelo(model, scaler, util.get_path_model(ticker, start_date, end_date), util.get_path_scaler(ticker, start_date, end_date))
+    test_metrics["ID"] = util.gravar_modelo(model, scaler, ticker, start_date, end_date, util.get_path_model(ticker, start_date, end_date), util.get_path_scaler(ticker, start_date, end_date))
     print(f"Modelo salvo com ID: {test_metrics['ID']}")
 
     return test_metrics
 
-def predict_model(id, start_date, end_date, sequence_length=30, num_days_to_predict=30):
+def predict_model(id, start_date, end_date, num_days_to_predict=1, sequence_length=30):
     """
     Faz previsões para um número especificado de dias futuros usando o modelo treinado
     
@@ -115,12 +118,14 @@ def predict_model(id, start_date, end_date, sequence_length=30, num_days_to_pred
         initial_sequence: Sequência inicial de preços (deve ter pelo menos sequence_length valores)
         num_days_to_predict: Número de dias futuros para prever
         sequence_length: Comprimento da sequência usada pelo modelo (padrão: 30)
-    
+
     Returns:
         numpy.array: Array com as previsões para os próximos num_days_to_predict dias
     """
     # Carregar modelo e scaler
-    model, scaler, ticker = util.carregar_modelo(id)
+    model = lstm.LightningLSTM(input_size=1, hidden_size=64, output_size=1)
+    model_state, scaler, ticker = util.carregar_modelo(id)
+    model.load_state_dict(model_state)
     
     if model is None or scaler is None:
         raise ValueError("Modelo ou scaler não encontrado para o ID fornecido.")
@@ -160,4 +165,4 @@ def predict_model(id, start_date, end_date, sequence_length=30, num_days_to_pred
             current_sequence = np.roll(current_sequence, -1)
             current_sequence[-1] = pred_normalized
     
-    return np.array(predictions)
+    return predictions
