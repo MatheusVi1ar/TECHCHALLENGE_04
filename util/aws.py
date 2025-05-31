@@ -62,6 +62,9 @@ def carregar_lstm_s3(s3_model_path, s3_scaler_path):
     """Carrega o modelo e scaler do S3"""
     # Comentar para publicar
     session = boto3.Session(
+        aws_access_key_id=os.getenv("aws_access_key_id"),
+        aws_secret_access_key=os.getenv("aws_secret_access_key"),
+        aws_session_token=os.getenv("aws_session_token"),
     )
     s3_client = session.client('s3')  # Comentar para publicar
     # s3_client = boto3.client('s3')  # Descomentar para publicar
