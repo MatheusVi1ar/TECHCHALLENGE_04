@@ -2,20 +2,27 @@ import io
 import os
 import boto3
 
-def gravar_s3(file_data, s3_file_name):
-    """Envia um arquivo JSON para o bucket S3 especificado.""" 
-    # Upload Parquet file to S3 
-    # #Comentar para publicar
+def gerar_s3_client():
+    # Upload Parquet file to S3
+    #Comentar para publicar
     session = boto3.Session(
         aws_access_key_id=os.getenv("aws_access_key_id"),
         aws_secret_access_key=os.getenv("aws_secret_access_key"),
         aws_session_token=os.getenv("aws_session_token"),
-   )
+    )
 
-    s3_client = session.client('s3')#Comentar para publicar
-#    s3_client = boto3.client('s3') #Descomentar para publicar
+    #Comentar para publicar
+    s3_client = session.client('s3')
+    #Descomentar para publicar
+    #s3_client = boto3.client('s3') 
 
     bucket_name = 'tc04-bucket-s3'
+
+    return s3_client, bucket_name
+
+def gravar_s3(file_data, s3_file_name):
+    """Envia um arquivo JSON para o bucket S3 especificado."""     
+    s3_client, bucket_name = gerar_s3_client()
 
     # Verificar o tipo de dados e processar adequadamente
     if isinstance(file_data, io.BytesIO):
@@ -37,17 +44,8 @@ def gravar_s3(file_data, s3_file_name):
 # Função para carregar JSON do S3
 def carregar_json_s3(s3_json_path):
     """Carrega um arquivo JSON do S3"""
-    # Comentar para publicar
-    session = boto3.Session(
-        aws_access_key_id=os.getenv("aws_access_key_id"),
-        aws_secret_access_key=os.getenv("aws_secret_access_key"),
-        aws_session_token=os.getenv("aws_session_token"),
-    )
-    s3_client = session.client('s3')  # Comentar para publicar
-    # s3_client = boto3.client('s3')  # Descomentar para publicar
-    
-    bucket_name = 'tc04-bucket-s3'
-    
+    s3_client, bucket_name = gerar_s3_client()
+
     # Carregar JSON
     buffer_json = io.BytesIO()
     s3_client.download_fileobj(bucket_name, s3_json_path, buffer_json)
@@ -60,22 +58,13 @@ def carregar_json_s3(s3_json_path):
     # Função adicional para carregar o modelo do S3
 def carregar_lstm_s3(s3_model_path, s3_scaler_path):
     """Carrega o modelo e scaler do S3"""
-    # Comentar para publicar
-    session = boto3.Session(
-        aws_access_key_id=os.getenv("aws_access_key_id"),
-        aws_secret_access_key=os.getenv("aws_secret_access_key"),
-        aws_session_token=os.getenv("aws_session_token"),
-    )
-    s3_client = session.client('s3')  # Comentar para publicar
-    # s3_client = boto3.client('s3')  # Descomentar para publicar
-    
-    bucket_name = 'tc04-bucket-s3'
-    
+    s3_client, bucket_name = gerar_s3_client()
+
     # Carregar modelo
     buffer_model = io.BytesIO()
     s3_client.download_fileobj(bucket_name, s3_model_path, buffer_model)
     buffer_model.seek(0)
-    
+
     # Carregar scaler
     buffer_scaler = io.BytesIO()
     s3_client.download_fileobj(bucket_name, s3_scaler_path, buffer_scaler)
