@@ -10,5 +10,3 @@ model/__pycache__/
 util/__pycache__/
 repository/__pycache__/
 modelos_treinados/
-/.env
-.env
