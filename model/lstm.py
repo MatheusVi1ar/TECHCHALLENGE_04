@@ -30,6 +30,6 @@ class LightningLSTM(L.LightningModule):
         input_i, label_i = batch
         output_i = self.forward(input_i)
         loss = nn.MSELoss()(output_i, label_i)
-        self.log("train_loss", loss)
-        self.training_losses.append(loss.item())
+        #self.log("train_loss", loss)
+        #self.training_losses.append(loss.item())
         return loss

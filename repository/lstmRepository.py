@@ -76,7 +76,9 @@ def train_model(ticker: str, start_date: str, end_date: str, train_size: float, 
     trainer = L.Trainer(
         max_epochs=num_epochs,
         log_every_n_steps=10,
-        enable_progress_bar=False
+        enable_progress_bar=False,
+        logger=False, 
+        enable_checkpointing=False
     )
     
     print("Iniciando treinamento...")
