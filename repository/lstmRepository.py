@@ -38,25 +38,25 @@ def train_model(ticker: str, start_date: str, end_date: str, train_size: float, 
     dates = []
     
     # 1. CARREGAR DADOS
-    print(f"📈 Baixando dados para {ticker}...")
+    print(f"Baixando dados para {ticker}...")
     prices, dates = util.carregar_dados(ticker, start_date, end_date)
-    print(f"✅ Dados carregados: {len(prices)} dias de {dates[0].strftime('%Y-%m-%d')} a {dates[-1].strftime('%Y-%m-%d')}")
+    print(f"Dados carregados: {len(prices)} dias de {dates[0].strftime('%Y-%m-%d')} a {dates[-1].strftime('%Y-%m-%d')}")
     
     if len(prices) == 0:
         raise ValueError("Nenhum dado de preço encontrado para o ticker especificado.")
 
     # 2. NORMALIZAÇÃO
-    print("🔄 Normalizando os preços...")
+    print("Normalizando os preços...")
     prices_scaled, scaler = util.normalizar_precos(prices)
     
     # 3. CRIAR SEQUÊNCIAS
     x, y = util.create_sequences(prices_scaled, sequence_length)
     sequence_dates = dates[sequence_length:]
-    print(f"📊 Sequências criadas: {len(x)} sequências de {sequence_length} dias")
+    print(f"Sequências criadas: {len(x)} sequências de {sequence_length} dias")
 
     # 4. DIVISÃO TEMPORAL DOS DADOS
     x_train, y_train, x_test, y_test, dates_train, dates_test = __separate_train_test_data__(x, y, sequence_dates, train_size=train_size)
-    print("📋 Divisão dos dados:")
+    print("Divisão dos dados:")
     print(f"  Treino: {len(x_train)} sequências ({dates_train[0].strftime('%Y-%m-%d')} a {dates_train[-1].strftime('%Y-%m-%d')})")
     print(f"  Teste: {len(x_test)} sequências ({dates_test[0].strftime('%Y-%m-%d')} a {dates_test[-1].strftime('%Y-%m-%d')})")
 
@@ -69,7 +69,7 @@ def train_model(ticker: str, start_date: str, end_date: str, train_size: float, 
     train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
     
     # 7. CRIAR E TREINAR MODELO
-    print("🤖 Criando modelo LSTM...")
+    print("Criando modelo LSTM...")
     model = lstm.LightningLSTM(input_size=1, hidden_size=64, output_size=1)
     
     # Treinar modelo
@@ -79,11 +79,11 @@ def train_model(ticker: str, start_date: str, end_date: str, train_size: float, 
         enable_progress_bar=False
     )
     
-    print("🚀 Iniciando treinamento...")
+    print("Iniciando treinamento...")
     trainer.fit(model, train_loader)
     
     # 8. FAZER PREVISÕES
-    print("🔮 Fazendo previsões...")
+    print("Fazendo previsões...")
     
     # Previsões para cada conjunto
     #y_train_pred = lstm.predict_sequences(model, x_train, scaler)
@@ -97,13 +97,13 @@ def train_model(ticker: str, start_date: str, end_date: str, train_size: float, 
     y_test_pred_rescaled = scaler.inverse_transform(y_test_pred.reshape(-1, 1)).flatten()
     
     # 9. CALCULAR MÉTRICAS
-    print("📊 Calculando métricas...")
+    print("Calculando métricas...")
     
     #train_metrics = metrics.calculate_metrics(y_train_actual, y_train_pred_rescaled)
     test_metrics = metrics.calculate_metrics(y_test_actual, y_test_pred_rescaled)
     
     #10. SALVAR MODELO
-    print("💾 Salvando modelo...")
+    print("Salvando modelo...")
     test_metrics["ID"] = util.gravar_modelo(model, scaler, ticker, start_date, end_date, util.get_path_model(ticker, start_date, end_date), util.get_path_scaler(ticker, start_date, end_date))
     print(f"Modelo salvo com ID: {test_metrics['ID']}")
 
