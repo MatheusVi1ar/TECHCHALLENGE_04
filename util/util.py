@@ -1,6 +1,6 @@
 import io
 import json
-import os
+#import os
 import joblib
 import torch
 import yfinance
@@ -9,19 +9,22 @@ import numpy as np
 from util import aws
 from model.APImodel import Model
 
+PATH_MODEL_JSON = "models.json"
+PATH_MODEL = "modelos_treinados"
+
 def get_path_model(ticker, start_date, end_date):
     #os.makedirs(os.getenv('PATH_MODEL'), exist_ok=True)
     #return os.path.join(os.getcwd(), os.getenv('PATH_MODEL'), f"{ticker}_{start_date}_{end_date}_lstm.pth")
-    return f"{os.getenv('PATH_MODEL')}/{ticker}_{start_date}_{end_date}_lstm.pth"
+    return f"{PATH_MODEL}/{ticker}_{start_date}_{end_date}_lstm.pth"
 
 def get_path_scaler(ticker, start_date, end_date):
     #os.makedirs(os.getenv('PATH_MODEL'), exist_ok=True)
     #return os.path.join(os.getcwd(), os.getenv('PATH_MODEL'), f"{ticker}_{start_date}_{end_date}_scaler.save")
-    return f"{os.getenv('PATH_MODEL')}/{ticker}_{start_date}_{end_date}_scaler.save"
+    return f"{PATH_MODEL}/{ticker}_{start_date}_{end_date}_scaler.save"
 
 def get_path_json():
     #return os.path.join(os.getcwd(), os.getenv('PATH_MODEL'), os.getenv('PATH_MODEL_JSON'))
-    return f"{os.getenv('PATH_MODEL')}/{os.getenv('PATH_MODEL_JSON', 'modelos.json')}"
+    return f"{PATH_MODEL}/{PATH_MODEL_JSON}"
 
 def carregar_dados(ticker:str, start_date:str, end_date:str):
     """Carrega os dados de um ticker específico entre as datas fornecidas."""

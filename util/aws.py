@@ -1,20 +1,20 @@
 import io
-import os
+#import os
 import boto3
 
 def gerar_s3_client():
     # Upload Parquet file to S3
-    #Comentar para publicar
-    session = boto3.Session(
-        aws_access_key_id=os.getenv("aws_access_key_id"),
-        aws_secret_access_key=os.getenv("aws_secret_access_key"),
-        aws_session_token=os.getenv("aws_session_token"),
-    )
+    #DesComentar para publicar
+    #session = boto3.Session(
+    #    aws_access_key_id=os.getenv("aws_access_key_id"),
+    #    aws_secret_access_key=os.getenv("aws_secret_access_key"),
+    #    aws_session_token=os.getenv("aws_session_token"),
+    #)
 
-    #Comentar para publicar
-    s3_client = session.client('s3')
-    #Descomentar para publicar
-    #s3_client = boto3.client('s3') 
+    #DesComentar para publicar
+    #s3_client = session.client('s3')
+    #comentar para publicar
+    s3_client = boto3.client('s3') 
 
     bucket_name = 'tc04-bucket-s3'
 
